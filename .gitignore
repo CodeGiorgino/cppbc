@@ -1,0 +1,8 @@
+# Compiled files
+*.a
+*.tar.gz
+*.out
+
+# Compilation folders
+deps/**
+obj/**
