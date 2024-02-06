@@ -1,8 +1,12 @@
 # Compiled files
 *.a
 *.tar.gz
-*.out
+
+example/*.out
 
 # Compilation folders
 deps/**
 obj/**
+
+example/deps/**
+example/obj/**
