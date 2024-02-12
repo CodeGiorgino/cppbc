@@ -73,6 +73,8 @@ float bc(std::string source) {
             /* Skip for now, implements nop check */
         }
 
+        else throw bc_parse_exception(pos, "Unknown character found");
+
         pos++;
     }
 
