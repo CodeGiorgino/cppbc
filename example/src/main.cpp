@@ -9,9 +9,12 @@
 int main(void) {
     fmt::println("{:=^40}", "[ example.out ]");
 
+    std::string source = "1 * 2 + 2 * 3";
+    fmt::println("Source: {}", source);
+
     try {
-        float retval = bc("1 + 1 * 2 + 3");
-        fmt::println("retval: {}", retval);
+        float result = bc(source);
+        fmt::println("Result: {}", result);
     }
 
     catch (bc_parse_exception& ex) {
