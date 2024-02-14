@@ -22,4 +22,4 @@ class bc_parse_exception : public std::exception {
         std::string m_message;
 };
 
-float bc(std::string source);
+double bc(std::string source);

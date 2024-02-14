@@ -1,15 +1,20 @@
 #include "../include/cppbc.hpp"
 #include <cmath>
+#include <fmt/base.h>
+#include <stdlib.h>
+#include <cstddef>
 #include <string>
+#include <vector>
 
-#define BinaryOpsLiteral std::string("+-*/")
+#define LOG_TRACE
+
+#define BinaryOpsLiteral std::string(" +-*/")
 enum BinaryOps { NOP, PLUS, DASH, STAR, SLASH };
 
 float bop_apply(float lhs, float rhs, BinaryOps bop, size_t pos) {
     (void)pos;
 
     switch (bop) {
-        // throw bc_parse_exception(pos, "Cannot apply NOP binary operator");
         case NOP:   return rhs;
         case PLUS:  return lhs + rhs;
         case DASH:  return lhs + rhs;
@@ -19,65 +24,139 @@ float bop_apply(float lhs, float rhs, BinaryOps bop, size_t pos) {
     }
 }
 
-float bc(std::string source) {
-    float retval = NAN;
+typedef struct TreeNode {
+    double value = NAN;
+    BinaryOps bop = BinaryOps::NOP;
+} TreeNode;
 
-    BinaryOps current_bop = BinaryOps::NOP;
-    std::string literal = "";
+void tree_dump(std::vector<TreeNode> const& root) {
+    size_t index = 0;
+
+    printf("\n===[ Tree dump ]===\n");
+    for (const auto& node : root) {
+        fmt::println("(#{})", index);
+        fmt::println(".value = {}", node.value);
+        fmt::println(".bop   = {}\n", BinaryOpsLiteral[node.bop]);
+        index++;
+    }
+}
+
+double bc_implementation(std::vector<TreeNode> const& root) {
+    std::vector<TreeNode> collapsed = root;
+
+    for (size_t i = 0; i < collapsed.size(); ++i) {
+        auto& node = collapsed[i];
+
+        if (node.bop == BinaryOps::STAR) {
+            auto& next = collapsed[i + 1];
+
+            next.value = node.value * next.value;
+            node.value = NAN;
+        }
+
+        else if (node.bop == BinaryOps::SLASH) {
+            auto& next = collapsed[i + 1];
+
+            next.value = node.value / next.value;
+            node.value = NAN;
+        }
+    }
+
+    for (size_t i = 0; i < collapsed.size(); ++i) {
+        auto& node = collapsed[i];
+
+        if (node.bop == BinaryOps::PLUS) {
+            size_t j = i + 1;
+            TreeNode* next = nullptr;
+
+            for (; j < collapsed.size(); ++j) {
+                if (!std::isnan(collapsed[j].value)) {
+                    next = &collapsed[j];
+                    break;
+                }
+            }
+
+            if (next == nullptr)
+                throw bc_parse_exception(i, "The node is missing an rvalue");
+
+            next->value = node.value + next->value;
+            i = j - 1;
+        }
+
+        else if (node.bop == BinaryOps::DASH) {
+            size_t j = i + 1;
+            TreeNode* next = nullptr;
+
+            for (; j < collapsed.size(); ++j) {
+                if (!std::isnan(collapsed[j].value)) {
+                    next = &collapsed[j];
+                    break;
+                }
+            }
+
+            if (next == nullptr)
+                throw bc_parse_exception(i, "The node is missing an rvalue");
+
+            next->value = node.value - next->value;
+            i = j - 1;
+        }
+    }
+
+    return collapsed.back().value;
+}
+
+double bc(std::string source) {
     size_t pos = 0;
+    std::vector<TreeNode> root;
 
-    for (char ch : source) {
-        /* Number parsing */
-        if (std::isdigit(ch))
+    std::string literal = "";
+
+    for (const char& ch : source) {
+        if ('0' <= ch && ch <= '9')
             literal += ch;
 
         else if (ch == '.') {
-            if (literal.find(".") == std::string::npos)
-                throw bc_parse_exception(pos, "Value cannot contains multiple dots");
+            if (literal.find('.') != std::string::npos)
+                throw bc_parse_exception(pos, "Numeric value cannot contains multiple floating points");
 
             literal += ch;
         }
 
-        /* Operation token parsing */
-        else if (BinaryOpsLiteral.find(ch) != std::string::npos) {
-            if (current_bop != BinaryOps::NOP && literal == "")
-                throw bc_parse_exception(pos, "Cannot concatenate binary operators");
-
-            retval = bop_apply(retval, atof(literal.c_str()), current_bop, pos);
-            literal = "";
+        else if (ch != ' ' && BinaryOpsLiteral.find(ch) != std::string::npos) {
+            BinaryOps bop = BinaryOps::NOP;
 
             switch (ch) {
                 case '+':
-                    current_bop = BinaryOps::PLUS;
+                    bop = BinaryOps::PLUS;
                     break;
-
                 case '-':
-                    current_bop = BinaryOps::DASH;
+                    bop = BinaryOps::DASH;
                     break;
-
                 case '*':
-                    current_bop = BinaryOps::STAR;
+                    bop = BinaryOps::STAR;
                     break;
-
                 case '/':
-                    current_bop = BinaryOps::SLASH;
+                    bop = BinaryOps::SLASH;
                     break;
-
-                default:
-                    throw bc_parse_exception(pos, "Binary operator not implemented");
+                default: 
+                    throw bc_parse_exception(pos, "Binary operator not implemented yet");
             }
+
+            root.push_back(TreeNode { .value = atof(literal.c_str()), .bop = bop });
+            literal = "";
         }
 
-        /* Extra */
-        else if (ch == ' ') {
-            /* Skip for now, implements nop check */
-        }
-
+        else if (ch == ' ') { /* Skip spaces */ }
         else throw bc_parse_exception(pos, "Unknown character found");
 
         pos++;
     }
 
-    retval = bop_apply(retval, atof(literal.c_str()), current_bop, pos);
-    return retval;
+    root.push_back(TreeNode { .value = atof(literal.c_str()) });
+
+#ifdef LOG_TRACE
+    tree_dump(root);
+#endif
+
+    return bc_implementation(root);
 }
