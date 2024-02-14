@@ -32,6 +32,10 @@ all: $(BIN)
 dist: $(DISTFILES)
 	$(TAR) -cvzf $(DISTOUTPUT) $^
 
+example: $(BIN)
+	cd ./example; \
+		make -B && ./main.out
+
 .PHONY: clean
 clean:
 	$(RM) -r $(OBJDIR) $(DEPDIR)
@@ -42,7 +46,7 @@ distclean: clean
 
 .PHONY: help
 help:
-	@echo "Makefile available targets: all dist clean distclean"
+	@echo "Makefile available targets: all dist example clean distclean"
 
 $(BIN): $(OBJS)
 	$(LINK.o) $^
