@@ -11,24 +11,16 @@
 #define BinaryOpsLiteral std::string(" +-*/")
 enum BinaryOps { NOP, PLUS, DASH, STAR, SLASH };
 
-float bop_apply(float lhs, float rhs, BinaryOps bop, size_t pos) {
-    (void)pos;
-
-    switch (bop) {
-        case NOP:   return rhs;
-        case PLUS:  return lhs + rhs;
-        case DASH:  return lhs + rhs;
-        case STAR:  return lhs * rhs;
-        case SLASH: return lhs / rhs;
-        default:    return 0.0f;
-    }
-}
-
 typedef struct TreeNode {
     double value = NAN;
     BinaryOps bop = BinaryOps::NOP;
 } TreeNode;
 
+/**
+ * @brief Dump the tree structure on the stdout
+ *
+ * @param root The tree to dump
+ */
 void tree_dump(std::vector<TreeNode> const& root) {
     size_t index = 0;
 
@@ -41,9 +33,14 @@ void tree_dump(std::vector<TreeNode> const& root) {
     }
 }
 
+/**
+ * @brief Implementation of the basic calculator
+ *
+ * @param root The tree representing the source
+ * @return The result of the operation
+ */
 double bc_implementation(std::vector<TreeNode> const& root) {
     std::vector<TreeNode> collapsed = root;
-
     for (size_t i = 0; i < collapsed.size(); ++i) {
         auto& node = collapsed[i];
 
