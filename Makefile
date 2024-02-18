@@ -46,7 +46,7 @@ distclean: clean
 
 .PHONY: help
 help:
-	@echo "Makefile available targets: all dist example clean distclean"
+	@echo "Available targets: help all dist example clean distclean"
 
 $(BIN): $(OBJS)
 	$(LINK.o) $^
