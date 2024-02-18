@@ -8,9 +8,7 @@
 
 int main(void) {
     fmt::println("{:=^40}", "[ example.out ]");
-
-    std::string source = "1 * 2 + 2 * 3";
-    fmt::println("Source: {}", source);
+    std::string source = "2 + (3 * (2 + 2)) + 2 * 3";
 
     try {
         float result = bc(source);
