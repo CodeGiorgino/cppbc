@@ -79,3 +79,36 @@ If the source contains a parentehesis contained expression, it will be evaluated
 then the result will be used as the value for a new node (see the previous section "Example with log trace enabled").
 
 Multiplications and divisions will be evaluated first, then additions and subtractions will be evaluated on the collapsed tree.
+
+## Usage
+> Look at the example source code and Makefile for better understanding
+Once you compiled the library, you can copy the file in `include` directory and the `cppbc.a` file into your project's directory.
+
+Example:
+```bash
+git clone --depth=1 https://github.com/CodeGiorgino/cppbc.git
+cd cppbc
+make
+
+cd ..
+mkdir test
+touch test/main.cpp
+cp cppbc/include/cppbc.hpp test/
+cp cppbc/cppbc.a test/
+cd test
+```
+
+```cpp
+/* main.cpp */
+
+#include "./cppbc.hpp"
+
+int main(void) {
+    fmt::println("Result: {}", bc("2 + 2"));
+    return 0;
+}
+```
+
+```bash
+g++ -Wall -Wextra -pedantic -std=c++23 main.cpp cppbc.a -o main.out && ./main.out
+```
