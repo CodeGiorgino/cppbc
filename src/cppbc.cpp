@@ -39,7 +39,7 @@ void tree_dump(std::vector<TreeNode> const& root) {
  * @param root The tree representing the source
  * @return The result of the operation
  */
-double bc_implementation(std::vector<TreeNode> const& root) {
+double bc_implementation(std::string source, std::vector<TreeNode> const& root) {
     std::vector<TreeNode> collapsed = root;
     for (size_t i = 0; i < collapsed.size(); ++i) {
         auto& node = collapsed[i];
@@ -74,7 +74,7 @@ double bc_implementation(std::vector<TreeNode> const& root) {
             }
 
             if (next == nullptr)
-                throw bc_parse_exception(i, "The node is missing an rvalue");
+                throw bc_parse_exception(source, i, "The node is missing an rvalue");
 
             next->value = node.value + next->value;
             i = j - 1;
@@ -92,7 +92,7 @@ double bc_implementation(std::vector<TreeNode> const& root) {
             }
 
             if (next == nullptr)
-                throw bc_parse_exception(i, "The node is missing an rvalue");
+                throw bc_parse_exception(source, i, "The node is missing an rvalue");
 
             next->value = node.value - next->value;
             i = j - 1;
@@ -103,23 +103,26 @@ double bc_implementation(std::vector<TreeNode> const& root) {
 }
 
 double bc(std::string source) {
-    size_t pos = 0;
     std::vector<TreeNode> root;
-
     std::string literal = "";
 
-    for (const char& ch : source) {
+    for (size_t pos = 0; pos < source.length(); ++pos) {
+        char ch = source[pos];
+
         if ('0' <= ch && ch <= '9')
             literal += ch;
 
         else if (ch == '.') {
             if (literal.find('.') != std::string::npos)
-                throw bc_parse_exception(pos, "Numeric value cannot contains multiple floating points");
+                throw bc_parse_exception(source, pos, "Numeric value cannot contains multiple floating points");
 
             literal += ch;
         }
 
         else if (ch != ' ' && BinaryOpsLiteral.find(ch) != std::string::npos) {
+            if (literal == "")
+                throw bc_parse_exception(source, pos, "Cannot declare a binary operator without a previous numeric value");
+
             BinaryOps bop = BinaryOps::NOP;
 
             switch (ch) {
@@ -136,24 +139,50 @@ double bc(std::string source) {
                     bop = BinaryOps::SLASH;
                     break;
                 default: 
-                    throw bc_parse_exception(pos, "Binary operator not implemented yet");
+                    throw bc_parse_exception(source, pos, "Binary operator not implemented yet");
             }
 
             root.push_back(TreeNode { .value = atof(literal.c_str()), .bop = bop });
             literal = "";
         }
 
-        else if (ch == ' ') { /* Skip spaces */ }
-        else throw bc_parse_exception(pos, "Unknown character found");
+        else if (ch == '(') {
+            size_t brackets_count = 1;
+            size_t i = pos + 1;
 
-        pos++;
+            for (; i < source.length(); ++i) {
+                if (source[i] == '(') 
+                    brackets_count++;
+                
+                else if (source[i] == ')') 
+                    brackets_count--;
+
+                if (brackets_count == 0) 
+                    break;
+            }
+
+            if (brackets_count > 0)
+                throw bc_parse_exception(source, pos, "Brackets mismatch");
+
+            std::string exp_result = std::to_string(bc(source.substr(pos + 1, i - pos - 1)));
+            source.erase(pos, i - pos + 1);
+            source.insert(pos, exp_result);
+            pos--;
+        }
+
+        else if (ch == ' ') { /* Skip spaces */ }
+        else {
+            fmt::println("[info] ch: '{}'", ch);
+            throw bc_parse_exception(source, pos, "Unknown character found");
+        }
     }
 
     root.push_back(TreeNode { .value = atof(literal.c_str()) });
 
 #ifdef LOG_TRACE
+    fmt::println("[INFO] (cppbc) Source: {}", source);
     tree_dump(root);
 #endif
 
-    return bc_implementation(root);
+    return bc_implementation(source, root);
 }
