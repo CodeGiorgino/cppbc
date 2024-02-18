@@ -1,12 +1,7 @@
 #include "../include/cppbc.hpp"
-#include <cmath>
-#include <fmt/base.h>
-#include <stdlib.h>
-#include <cstddef>
-#include <string>
 #include <vector>
 
-#define LOG_TRACE
+// #define LOG_TRACE
 
 #define BinaryOpsLiteral std::string(" +-*/")
 enum BinaryOps { NOP, PLUS, DASH, STAR, SLASH };
