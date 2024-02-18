@@ -82,6 +82,7 @@ Multiplications and divisions will be evaluated first, then additions and subtra
 
 ## Usage
 > Look at the example source code and Makefile for better understanding
+
 Once you compiled the library, you can copy the file in `include` directory and the `cppbc.a` file into your project's directory.
 
 Example:
