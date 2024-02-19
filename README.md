@@ -8,14 +8,14 @@ To compile the library you need to install [fmtlib/fmt](https://github.com/fmtli
 You can compile just by running `make` in the root directory of the project
 
 ### Make targets
-Name      | Usage
-:---      | :---
-help      | Show the available targets
-all       | Build the library
-dist      | Build the library for distribution
-example   | Build the library, the example code and run it
-clean     | Clean build files
-cleandist | Clean distribution build files
+Name        | Usage
+:---        | :---
+`help`      | Show the available targets
+`all`       | Build the library
+`dist`      | Build the library for distribution
+`example`   | Build the library, the example code and run it
+`clean`     | Clean build files
+`cleandist` | Clean distribution build files
 
 ### Log trace
 You can enable the log of the parsed trees by defining `LOG_TRACE` in `src/cppbc.cpp`
